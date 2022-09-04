@@ -32,7 +32,7 @@
       </Category>
 
       <Category title="神秘">
-        // 收到插槽回传的数据，结构赋值
+        // 收到插槽回传的数据，解构赋值
         <template slot="secondSlot" scope="{slotGames}">
           <ul>
             <li v-for="(item, index) in slotGames" :key="index">{{ item }}</li>
@@ -51,6 +51,14 @@
       <el-button type="warning">警告按钮</el-button>
       <el-button type="danger">危险按钮</el-button>
     </el-row>
+
+    <div>
+      <router-link to="/customer?type=2&name=会员&id=111&title=无敌标题">跳转Customer</router-link>
+      <router-link to="/employee?type=1&name=员工">跳转Employee</router-link>
+      <router-link to="/person">跳转Person, 显示会员</router-link>
+    </div>
+    <router-view></router-view>
+    <router-view name="cu"></router-view>
   </div>
 </template>
 

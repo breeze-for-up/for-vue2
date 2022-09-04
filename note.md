@@ -125,6 +125,177 @@ proxy: {
 
 ## 路由
 1. 安装`npm i vue-router@3`
+2. 基本路由:
+	1. 使用`<router-link>`指定跳转的页面
+	2. 使用`<router-view>`指定组件显示位置，当有多个`<router-view>`时，指定`name`属性区分展示对应的视图，`name`属性的值与路由器中的组件`key`对应
+3. 多级路由
+	1. 在路由器中通过`children`属性指定子路由，注意子级路由路径中无须`/`开头
+4. 路由传参
+	1. 传`query`参数，直接在`<router-link>`中拼接，注意使用模板字符串，比如：
+	```javascript
+	// 字符串写法
+	<li v-for="m in msgList" :key="m.id">
+		<router-link :to="`/home/message/detail?id=${m.id}&title=${m.title}`">{{m.title}}</router-link>
+	</li>
+
+	// 对象写法
+	<router-link :to="{
+		path:'/home/message/detail',
+		query:{
+			id:m.id,
+			title:m.title
+		}
+	}">
+		{{m.title}}
+	</router-link>
+	```
+	2. 传`params`参数，需要在路由器中声明占位符
+	```javascript
+	// 路由器
+	{
+		path:'/customer/:id/:title',
+		component:Customer
+	}
+
+	// 传参
+	// 字符串写法
+	<li v-for="m in msgList" :key="m.id">
+		<router-link :to="`/home/message/detail/${m.id}/${m.title}`">{{m.title}}</router-link>
+	</li>
+
+	// 对象写法
+	<router-link :to="{
+		name:'huiyuan',
+		params:{
+			id:m.id,
+			title:m.title
+		}
+	}">
+		{{m.title}}
+	</router-link>
+	```
+5. 命名路由<br>
+	给路由起个名字，简化`<router-link>`中的写法
+	```javascript
+	// 在路由器中指定name名称,此处就可以用name可代替path
+	// 注意若传递params参数,必须用name,不能用path
+	<router-link :to="{
+		name:'yuangong',
+		query:{
+			id:m.id,
+			title:m.title
+		}
+	}">
+		{{m.title}}
+	</router-link>		
+	```
+6. 路由的`props`配置<br>
+	在路由器中增加`props`属性，可以附带数据给组件，便于组件用更方便的写法取数据<br>
+	函数写法:
+	```javascript
+	path:'/customer',
+	component:Customer,
+	// 函数形式，参数为$route,可以获取到路由中的信息
+	// props($route){
+	// 	return {id:$route.query.id, title:$route.query.title}
+	// }
+
+	// 解构赋值
+	props({query:{id,title}}){
+		return {id, title}
+	}
+	```
+	在`Customer`组件中可以用`props`配置接收到`id`、`title`参数，从而在组件中可以直接取值使用
+7. 编程式路由，通过`js`代码控制跳转
+	1. 使用:
+	```javascript
+	this.$router.push({
+		path:'/goods',
+		query:{
+			goodsId:12345
+	}
+	```
+	> push模式: 累积页面调用记录<br>
+	> replace模式：删除之间的调用记录
+	2. 常用`API`
+	```javascript
+	// 前进
+	this.$router.forward();
+	// 后退
+	this.$router.back();
+	// 往前连续走n步
+	this.$router.go(n);
+	```
+8. 缓存路由组件<br>
+	正常情况下，当组件切换后，前面的组件就被销毁了；若要保持组件不被销毁：<br>
+	使用`<keep-alive>`包裹`<router-view>`
+	```javascript
+	// include属性指定不被销毁的组件名，若不指定，则视图下所有组件都不销毁
+	<keep-alive include='News'>
+		<router-view></router-view>
+	</keep-alive>
+
+	// 多个的写法
+	// <keep-alive :include=['News', 'xxx']>
+	```
+9. 生命周期函数<br>
+	路由组件独有两个生命周期钩子函数:
+	```javascript
+	activated(){
+		console.log('组件被激活');
+	},
+	deactivated(){
+		console.log('组件失活');
+	}
+	```
+10. 路由守卫
+	1. 全局路由守卫
+	```javascript
+	// 前置路由守卫 === 组件初始化或者组件切换之前调用
+	router.beforeEach((to,from,next)=>{
+		console.log('===',next);
+		if(to.name==='yuangong'){
+			next();
+		} else {
+			alert('无权限查看');
+		}
+	})
+
+	// 后置
+	router.afterEach((to,from)=>[
+		// 路由跳转成功之后修改页面标题
+		document.title = to.meta.title || '默认标题',
+	])
+	```
+	2. 独享路由守卫，注意独享路由守卫只有前置，没有后置
+	```javascript
+	{
+		path:'/person',
+		components:{
+			em:Employee,
+			cu:Customer
+
+		},
+		beforeEnter(to,from,next){
+			console.log('独享路由守卫');
+		}
+	}
+	```
+	3. 组件内路由守卫
+	```javascript
+	// 通过路由规则，进入该组件时被调用
+	beforeRouteEnter (to, from, next) {
+		// ...
+	},
+	// 通过路由规则，离开该组件时被调用
+	beforeRouteLeave (to, from, next) {
+		// ...
+	}
+	```
+11. 工作模式: `history`与`hash`<br>
+	`history`：浏览器访问页面路径中不包含`#`，但是当项目打包上线后，刷新页面时会找不到路径，因为路径中包含组件名，实际并没有组件名页面资源，这是单页面应用；也可通过后端解决路径问题<br>
+	`hash`：浏览器路径中包含`#`，`#`后面的值为`hash`值，`hash`值不会包含在`http`请求中
+
 
 
 ## Element UI
