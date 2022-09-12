@@ -90,7 +90,7 @@ this.$nextTick(function(){
 </transition-group>
 ```
 
-## ajix
+## ajax
 1. 安装`npm i axios`
 2. 发起请求，配置代理
 ```javascript
@@ -111,7 +111,7 @@ proxy: {
 2. 分类：默认插槽、具名插槽、作用域插槽（数据在组件自身，但是可以传给调用者控制形式）
 ```javascript
 <Category title="神秘">
-	// 收到插槽回传的数据，结构赋值
+	// 收到插槽回传的数据，解构赋值
 	<template slot="secondSlot" scope="{slotGames}">
 		<ul>
 			<li v-for="(item,index) in slotGames" :key="index">{{item}}</li>
